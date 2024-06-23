@@ -1,32 +1,11 @@
 {
-    "development": {
-      "username": "postgres",
-      "password": "postgres",
-      "database": "zameen",
-      "host": "localhost",
-      "port": "5494",
-      "dialect": "postgres"
-    },
-    "test": {
-      "username": "postgres",
-      "password": "1234",
-      "database": "zameen",
-      "host": "localhost",
-      "dialect": "postgres"
-    },
-    "production": {
-      "username": "cert_app8_user",
-      "password": "zYUSLe3eAFp52bMwaIdbFaPWukGuA4sz",
-      "database": "cert_app8",
-      "host": "dpg-co1gibla73kc73cernsg-a.oregon-postgres.render.com",
-      "dialect": "postgres",
-      "ssl": true,
-      "dialectOptions": {
-        "ssl": {
-          "require": true,
-          "rejectUnauthorized": false
-        }
-      }
-    }
+  "development": {
+    "url": "mongodb://localhost:27017/zameen_dev"
+  },
+  "test": {
+    "url": "mongodb://localhost:27017/zameen_test"
+  },
+  "production": {
+    "url": "mongodb+srv://admin:admin@cluster0.3lrinwh.mongodb.net/priceawards?retryWrites=true&w=majority&appName=Cluster0"
   }
-  
+}

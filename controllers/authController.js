@@ -1,14 +1,12 @@
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../utils/generateToken");
-const {
-  user:UserModel,
-  verificationtoken:VerificationTokenModel 
-} = require("../models");
+const UserModel = require("../models/user");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
+
 const { sendEmailWithAttachment, sendForgotPasswordEmail ,sendVerificationEmail} = require("../utils/Email");
 const { decodeToken } = require("../middlewares/authentication");
-const { count } = require("console");
+
+
 const loginUser = asyncHandler(async (req, res) => {
   const userCredentials = req.body;
 
@@ -20,7 +18,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   // Find the user by email
-  const userVar = await UserModel.findOne({ where: { email: userEmail } });
+  const userVar = await UserModel.findOne({ email: userEmail });
 
   if (!userVar) {
     // User not found
@@ -41,32 +39,26 @@ const loginUser = asyncHandler(async (req, res) => {
   const token = await generateToken(res, userVar.id);
   const userResponse = {
     email: userVar.email,
-    name: userVar.name,
+    firstName: userVar.firstName,
+    lastName: userVar.lastName,
+    profileName: userVar.profileName,
     phoneNumber: userVar.phoneNumber,
     role: userVar.role,
     image: userVar.image,
-    address: userVar.address,
-    country: userVar.country,
-    city: userVar.city,
-    whatsappNumber: userVar.whatsappNumber,
     token: token,
-    isAgent: userVar.isAgent,
-
   };
- 
-   
+
   // Passwords match, login successful
   res.status(200).json({ success:true ,message: "Login successful",  user: userResponse });
 });
 
-//otp verificatin 
+//otp verification 
 const registerUser = async (req, res) => {
-  const { name, email, phoneNumber, password, role, image, termsConditions,isAgent } = req.body;
+  const { firstName, lastName, profileName, email, phoneNumber, password, role, image } = req.body;
   try {
-    const existingUser = await UserModel.findOne({ where: { email } });
+    const existingUser = await UserModel.findOne({ email });
 
-
-    if (existingUser && !existingUser.iverified) {
+    if (existingUser && !existingUser.verified) {
       // Generate a 5-digit OTP
       const otp = Math.floor(10000 + Math.random() * 90000).toString();
 
@@ -80,21 +72,19 @@ const registerUser = async (req, res) => {
         .json({ success: true, message: "User already Exits, Just Need Verification, Check Email!", redirectTo: "verifyOtp" ,email});
     }
 
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const obj = {
       email: email,
       password: hashedPassword,
-      name: name,
+      firstName: firstName,
+      lastName: lastName,
+      profileName: profileName,
       phoneNumber: phoneNumber,
       role: role,
       image: image,
-      termsConditions: termsConditions,
       verified: false,
-      isAgent: role === "agent" ? true : false,
     }
-    const newUser = await UserModel.create({ ...obj
-          });
+    const newUser = await UserModel.create(obj);
       
     if (newUser) {
       const otp = Math.floor(10000 + Math.random() * 90000).toString();
@@ -111,119 +101,12 @@ const registerUser = async (req, res) => {
         .status(201)
         .json({ success: false, message: "Error Sending Email for Verification" });
     }
-    // const userData = {
-    //   id: newUser.id,
-    //   firstName: newUser.firstName,
-    //   lastName: newUser.lastName,
-    //   email: newUser.email,
-    //   companyName: newUser.companyName,
-    //   phoneNumber: newUser.phoneNumber,
-    //   role: newUser.role,
-    //   image: newUser.image,
-    // };
-
-    // const token = await generateToken(res, userData.id);
-    // res
-    //   .status(201)
-    //   .json({ message: "User registered successfully", token, user: userData });
   } catch (err) {
     console.error("Error registering user:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-//token verification
-// const registerUser = async (req, res) => {
-//   const { name, email, phoneNumber, password, role, image, termsConditions,isAgent } = req.body;
-
-//   if (!email || !password) {
-//     return res.status(400).json({ error: "All fields are required" });
-//   }
-
-//   try {
-//     const existingUser = await UserModel.findOne({ where: { email } });
-//     if (existingUser && !existingUser.verified) {
-//       // If the user exists but is not verified, resend the verification email
-//       const oldVerificationToken = await VerificationTokenModel.findOne({ where: { userId: existingUser.id } });
-//       if (oldVerificationToken && (Date.now() - oldVerificationToken.createdAt < 60000)) {
-//         // If a verification token was created within the last minute, return an error
-//         return res.status(400).json({ error: "Please wait a minute before requesting a new verification email." });
-//       } else if (oldVerificationToken) {
-//         // If an old verification token exists, delete it
-//         await oldVerificationToken.destroy();
-//       }
-
-//       // Create a new verification token
-//       const newVerificationToken = await VerificationTokenModel.create({
-//         userId: existingUser.id,
-//         token: crypto.randomBytes(20).toString('hex'),
-//         expires: Date.now() + 1800000 // 30 minutes
-//       });
-
-//       sendVerificationEmail(email, newVerificationToken.token);
-//       return res.status(200).json({ message: "Verification email resent. Please check your email." });
-//     } else if (existingUser) {
-//       return res.status(400).json({ error: "User with this email already exists!" });
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const obj = {
-//       email: email,
-//       password: hashedPassword,
-//       name: name,
-//       phoneNumber: phoneNumber,
-//       role: role,
-//       image: image,
-//       termsConditions: termsConditions,
-//       verified: false,
-//       isAgent: isAgent||false
-//     }
-
-//     const newUser = await UserModel.create({ ...obj
-//     });
-
-//     const verificationToken = await VerificationTokenModel.create({
-//       userId: newUser.id,
-//       token: crypto.randomBytes(20).toString('hex'),
-//       expires: Date.now() + 1800000 // 30 minutes
-//     });
-
-//     sendVerificationEmail(email, verificationToken.token);
-
-  
-
-//     res.status(201).json({ message: "User registered successfully. Please check your email to verify your account." });
-//   } catch (err) {
-//     console.error("Error registering user:", err);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
-const verifyUser = async (req, res) => {
-  try {
-    const token = req.params.token;
-    const verificationToken = await VerificationTokenModel.findOne({ where: { token } });
-
-    if (!verificationToken) {
-      return res.status(400).json({success:false, error: "Invalid or expired verification token." });
-    }
-
-    if (Date.now() > verificationToken.expires) {
-      return res.status(400).json({success:false, error: "Verification token has expired. Please register again." });
-    }
-
-    const user = await UserModel.findOne({ where: { id: verificationToken.userId } });
-    user.verified = true;
-    await user.save();
-
-    // Delete the verification token
-    await verificationToken.destroy();
-
-    res.status(200).json({success:true, message: "User verified successfully." });
-  } catch (err) {
-    console.error("Error verifying user:", err);
-    res.status(500).json({success:false, error: "Internal Server Error" });
-  }
-};
 
 
 
@@ -232,9 +115,8 @@ const verifyUser = async (req, res) => {
 //forgot password..........
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
-  console.log(email)
 
-  const user = await UserModel.findOne({ where: { email } });
+  const user = await UserModel.findOne({ email });
 
   if (!user) {
     return res.status(400).json({ success: false, message: 'Account not found' });
@@ -255,15 +137,11 @@ const forgotPassword = async (req, res) => {
 const resendOtp = async (req, res) => {
   const { email } = req.body;
 
-  const user = await UserModel.findOne({ where: { email } });
+  const user = await UserModel.findOne({ email });
 
   if (!user) {
     return res.status(400).json({ success: false, message: 'Account not found' });
   }
-
-  // if (Date.now() < user.otpExpire) {
-  //   return res.status(400).json({ success: false, message: 'OTP is still valid' });
-  // }
 
   const otp = Math.floor(10000 + Math.random() * 90000).toString();
 
@@ -278,9 +156,8 @@ const resendOtp = async (req, res) => {
 
 const verifyOtp = async (req, res) => {
   const { otp, email } = req.body;
-  console.log("verifyOtp->: ", otp, email)
 
-  const user = await UserModel.findOne({ where: { email } });
+  const user = await UserModel.findOne({ email });
 
   if (!user) {
     return res.status(400).json({ success: false, message: 'Account not found' });
@@ -304,15 +181,15 @@ const verifyOtp = async (req, res) => {
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
-    companyName: user.companyName,
+    profileName: user.profileName,
     phoneNumber: user.phoneNumber,
     role: user.role,
     image: user.image,
-    isAgent: user.isAgent,
   };
   const token = await generateToken(res, userData.id);  //for signup scenerio
   res.status(200).json({success:true, message: 'OTP Verified', token, user: userData });
 };
+
 const resetPassword = async (req, res) => {
   const { password, confirmPassword, email } = req.body;
 
@@ -320,7 +197,7 @@ const resetPassword = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Passwords do not match' });
   }
 
-  const user = await UserModel.findOne({ where: { email } });
+  const user = await UserModel.findOne({ email });
 
   if (!user) {
     return res.status(400).json({ success: false, message: 'Account not found' });
@@ -335,52 +212,43 @@ const resetPassword = async (req, res) => {
 };
 
 
-//forgot passowrd......... end
-
-
 
 const loginwithGoogle = async (req, res) => {
   const { email } = req.body;
-  console.log(email);
+
   if (!email) {
     return res.status(400).send({ message: "User data are required!" });
   }
 
-  const isEmailExists = await UserModel.findOne({ where: { email } });
+  const isEmailExists = await UserModel.findOne({ email });
   if (isEmailExists) {
     return res.status(200).send({ message: "Login Successful!", user: isEmailExists });
   }
 
   res.status(404).json({ message: "notFound!" });
-
 }
-
-
 
 const verfiyToken = async (req, res) => {
   try {
       const token = req.headers["x-access-token"];
-      console.log("token",token)
       const data = decodeToken(token)
      
-      const findUser = await UserModel.findOne({
-          where: { id: data.userId, isDeleted: false, verified: true}
-      });
-   
+      const findUser = await UserModel.findOne({ id: data.userId, isDeleted: false, verified: true });
+
       if (!findUser) {
-        return res.status(400).send({ success:false,message: "Token Invalid."
-        } );
+        return res.status(400).send({ success:false,message: "Token Invalid." });
       }
-      return res.status(200).send({ user: {...findUser?.dataValues}, message: "Token Valid.",success:true });
+      return res.status(200).send({ user: {...findUser}, message: "Token Valid.",success:true });
   } catch (error) {
       throw error;
   }
 }
 
+
+
 module.exports = {
     loginUser,
     registerUser,
-    verifyUser,
     forgotPassword,
     verifyOtp,
     resetPassword,

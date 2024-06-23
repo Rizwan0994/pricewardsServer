@@ -1,4 +1,0 @@
-2024-06-10T19:00:03.458Z [error]: Error during promotion expiry check:
-2024-06-10T20:07:09.916Z [error]: Error promoting property ID: 98845acf-8516-471f-84f1-33d8c204ee72
-2024-06-10T20:13:35.275Z [info]: Property ID: 98845acf-8516-471f-84f1-33d8c204ee72 promoted successfully for user ID: 1
-2024-06-11T19:00:03.009Z [info]: Promotion expiry check completed.
