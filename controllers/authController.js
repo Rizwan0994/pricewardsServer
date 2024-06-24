@@ -52,26 +52,31 @@ const loginUser = asyncHandler(async (req, res) => {
   res.status(200).json({ success:true ,message: "Login successful",  user: userResponse });
 });
 
-//otp verification 
+
 const registerUser = async (req, res) => {
   const { firstName, lastName, profileName, email, phoneNumber, password, role, image } = req.body;
   try {
     const existingUser = await UserModel.findOne({ email });
 
-    if (existingUser && !existingUser.verified) {
-      // Generate a 5-digit OTP
-      const otp = Math.floor(10000 + Math.random() * 90000).toString();
+    if (existingUser) {
+      if (!existingUser.verified) {
+        // Generate a 5-digit OTP
+        const otp = Math.floor(10000 + Math.random() * 90000).toString();
 
-      existingUser.otp = otp;
-      existingUser.otpExpire = Date.now() + 300000; // OTP expires after 5 minutes
-      await existingUser.save();
+        existingUser.otp = otp;
+        existingUser.otpExpire = Date.now() + 300000; // OTP expires after 5 minutes
+        await existingUser.save();
 
-      await sendVerificationEmail(existingUser.email, otp);
-      return res
-        .status(200)
-        .json({ success: true, message: "User already Exits, Just Need Verification, Check Email!", redirectTo: "verifyOtp" ,email});
+        await sendVerificationEmail(existingUser.email, otp);
+        return res
+          .status(200)
+          .json({ success: true, message: "User already exists, just needs verification. Check email!", redirectTo: "verifyOtp" ,email});
+      } else {
+        return res
+          .status(400)
+          .json({ success: false, message: "User with this email already exists" });
+      }
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const obj = {
       email: email,
