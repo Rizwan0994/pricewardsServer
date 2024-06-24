@@ -11,7 +11,7 @@ const createProduct = asyncHandler(async (req, res) => {
       name,
       price,
       description,
-      imageUrl,
+      imageUrl: Array.isArray(imageUrl) ? imageUrl : [imageUrl],
       code,
       stock,
       length,
@@ -70,7 +70,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.name = name || product.name;
     product.price = price || product.price;
     product.description = description || product.description;
-    product.imageUrl = imageUrl || product.imageUrl;
+    product.imageUrl = Array.isArray(imageUrl) ? imageUrl : [imageUrl];
     product.code = code || product.code;
     product.stock = stock || product.stock;
     product.length = length || product.length;
