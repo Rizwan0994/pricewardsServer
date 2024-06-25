@@ -9,16 +9,16 @@ const { jwtValidation} = require('../middlewares/authentication');
 // const propertyController = require('../controllers/propertyController');
 // const userController = require('../controllers/userController');
 const productRoutes = require('../routes/productRoutes');
+const productController = require('../controllers/productController');
 // const paymentRoutes = require('../routes/paymentRoutes');
 // const product = require('../models/product');
 router.use('/api/auth', authRoutes);
 
-
+router.get('/api/product', productController.getAllProducts);
 // router.use('/api/contact', contactRoutes);
 // router.use('/api/payment', paymentRoutes);
 router.use(jwtValidation);
-// router.use('/api/user', userRoutes);
-// router.use('/api/property', propertyRoutes);
+
 router.use('/api/product',productRoutes);
 
 
