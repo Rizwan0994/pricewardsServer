@@ -5,7 +5,7 @@ const Product = require("../models/product");
 const createProduct = asyncHandler(async (req, res) => {
   const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender } = req.body;
   console.log(req.body);     
-  const userId = req.loginUser.id;                   
+  const userId = req.loginUser._id;               
 
   try {
     const product = new Product({
@@ -91,7 +91,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
 // Find all products of a specific user
 const getUserProducts = asyncHandler(async (req, res) => {
-  const userId = req.loginUser.id; // Get userId from the logged-in user context
+  const userId = req.loginUser._id; // Get userId from the logged-in user context
   const { page = 1, limit = 10 } = req.query;
 
   try {
@@ -121,7 +121,7 @@ const getUserProducts = asyncHandler(async (req, res) => {
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender } = req.body;
-  const userId = req.loginUser.id;   
+  const userId = req.loginUser._id; 
   try {
     const product = await Product.findById(id);
     if (!product) {

@@ -12,11 +12,10 @@ exports.jwtValidation = async (req, res, next) => {
                     message: err.message
                 });
             } else {
-                const findUser = await UserModel.findOne({ 
-                    where: { id: decoded.userId }
-                });
+                const findUser = await UserModel.findOne({ _id: decoded.userId });
+             
                 if (findUser) {
-                    req.loginUser = findUser.dataValues;
+                    req.loginUser = findUser;
                     next();
                 } else {
                     return res.status(401).json({
