@@ -5,7 +5,7 @@ const router = express.Router();
 // const propertyRoutes = require("../routes/propertyRoutes")
 const authRoutes = require("../routes/authRoutes")
 // const contactRoutes = require("../routes/contactRoutes")
-// const { jwtValidation} = require('../middlewares/authentication');
+const { jwtValidation} = require('../middlewares/authentication');
 // const propertyController = require('../controllers/propertyController');
 // const userController = require('../controllers/userController');
 const productRoutes = require('../routes/productRoutes');
@@ -16,7 +16,7 @@ router.use('/api/auth', authRoutes);
 
 // router.use('/api/contact', contactRoutes);
 // router.use('/api/payment', paymentRoutes);
-// router.use(jwtValidation);
+router.use(jwtValidation);
 // router.use('/api/user', userRoutes);
 // router.use('/api/property', propertyRoutes);
 router.use('/api/product',productRoutes);

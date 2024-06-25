@@ -3,8 +3,9 @@ const Product = require("../models/product");
 
 // Create a new product
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender, userId } = req.body;
-  console.log(req.body);                        
+  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender } = req.body;
+  console.log(req.body);     
+  const userId = req.loginUser.id;                   
 
   try {
     const product = new Product({
@@ -48,9 +49,41 @@ const getProduct = asyncHandler(async (req, res) => {
 
 // Get all products
 const getAllProducts = asyncHandler(async (req, res) => {
+  const { minPrice, maxPrice, category, bestFilter, page = 1, limit = 10 } = req.query;
+
+  let filter = {};
+
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice) filter.price.$gte = parseFloat(minPrice);
+    if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+  }
+
+  if (category) {
+    filter.seasonalCategory = category;
+  }
+
+  if (bestFilter) {
+    filter.rating = { $gte: 4 }; // Assuming `rating` field exists in your schema
+  }
+
   try {
-    const products = await Product.find({});
-    res.status(200).json({ success: true, products });
+    const offset = (page - 1) * limit;
+    const totalCount = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
+      .skip(offset)
+      .limit(parseInt(limit));
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(200).json({
+      success: true,
+      products,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalCount: totalCount,
+      totalPages: totalPages,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -59,8 +92,8 @@ const getAllProducts = asyncHandler(async (req, res) => {
 // Update a product by ID
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender, userId } = req.body;
-
+  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender } = req.body;
+  const userId = req.loginUser.id;   
   try {
     const product = await Product.findById(id);
     if (!product) {
