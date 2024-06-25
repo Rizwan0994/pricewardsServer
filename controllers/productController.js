@@ -60,7 +60,11 @@ const getAllProducts = asyncHandler(async (req, res) => {
   }
 
   if (category) {
-    filter.seasonalCategory = category;
+    const categoryRegex = new RegExp(category, 'i'); // 'i' for case-insensitive
+    filter.$or = [
+      { seasonalCategory: categoryRegex },
+      { fabricCategory: categoryRegex }
+    ];
   }
 
   if (bestFilter) {
