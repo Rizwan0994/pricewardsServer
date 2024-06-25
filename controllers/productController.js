@@ -89,6 +89,34 @@ const getAllProducts = asyncHandler(async (req, res) => {
   }
 });
 
+// Find all products of a specific user
+const getUserProducts = asyncHandler(async (req, res) => {
+  const userId = req.loginUser.id; // Get userId from the logged-in user context
+  const { page = 1, limit = 10 } = req.query;
+
+  try {
+    const filter = { userId: userId };
+    const offset = (page - 1) * limit;
+    const totalCount = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
+      .skip(offset)
+      .limit(parseInt(limit));
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(200).json({
+      success: true,
+      products,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalCount: totalCount,
+      totalPages: totalPages,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Update a product by ID
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -145,4 +173,5 @@ module.exports = {
   getAllProducts,
   updateProduct,
   deleteProduct,
+  getUserProducts
 };
