@@ -1,7 +1,4 @@
-const {
-    user:UserModel,
-    verificationtoken:VerificationTokenModel 
-  } = require("../models");
+const UserModel = require("../models/user");
   const { JWT_SECRET_KEY} = require("../constants/auth.constant");
     const jwt = require("jsonwebtoken");
 
