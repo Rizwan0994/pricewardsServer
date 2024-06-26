@@ -15,6 +15,10 @@ const productController = require('../controllers/productController');
 router.use('/api/auth', authRoutes);
 
 router.get('/api/product', productController.getAllProducts);
+ router.use('/api/product/getBestSellingProducts', productController.getBestSellingProducts);
+ router.get('/api/product/:id', productController.getProduct); 
+ router.get('/api/product/topProducts/:userId', productController.getUserBestSellingProducts);
+                                                                                        
 // router.use('/api/contact', contactRoutes);
 // router.use('/api/payment', paymentRoutes);
 router.use(jwtValidation);

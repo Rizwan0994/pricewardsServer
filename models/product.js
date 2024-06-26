@@ -14,6 +14,8 @@ const ProductSchema = new mongoose.Schema({
   seasonalCategory: String,
   fabricCategory: String,
   productGender: String,
+  sold: Number,
+  category: String,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
