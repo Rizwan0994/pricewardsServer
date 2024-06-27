@@ -54,7 +54,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 const registerUser = async (req, res) => {
-  const { firstName, lastName, profileName, email, phoneNumber, password, role, image } = req.body;
+  const { firstName, lastName, description, profileName, email, phoneNumber, password, role, image } = req.body;
   try {
     const existingUser = await UserModel.findOne({ email });
 
@@ -80,6 +80,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const obj = {
       email: email,
+      description: description,
       password: hashedPassword,
       firstName: firstName,
       lastName: lastName,

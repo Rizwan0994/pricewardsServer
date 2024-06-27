@@ -25,13 +25,13 @@ async function sendVerificationEmail(email, otp) {
       to: email,
       subject: `Account Verification`,
       html: `
-        <h1>Welcome to Zameen Visit</h1>
+        <h1>Welcome to pricewards</h1>
         <p>Dear User,</p>
         <p>Please click the OTP below to verify your account:</p>
         <p>Your OTP is ${otp}. Please use this OTP to Set your Account.</p>
         <p>If you have any questions, feel free to reply to this email. We're here to help!</p>
         <p>Best,</p>
-        <p>The Zameen Visit Team</p>
+        <p>The pricewards Team</p>
       `,
     };
 
@@ -66,7 +66,7 @@ async function sendEmailWithAttachment(email ,linkPath) {
         from: `${process.env.Email} `,
         to: email,
         subject: `Project Initation`,
-        text: `Hi Dear,\n click the below link to join the Zameen Visit \n ${linkPath}`,
+        text: `Hi Dear,\n click the below link to join the pricewards \n ${linkPath}`,
       };
   
       // Send the email
@@ -100,7 +100,7 @@ async function sendEmailWithAttachment(email ,linkPath) {
         <p>Your OTP for password reset is ${otp}. Please use this OTP to reset your password.</p>
         <p>If you did not request a password reset, please ignore this email or contact support if you have any concerns.</p>
         <p>Best,</p>
-        <p>The Zameen Visit Team</p>
+        <p>The pricewards Team</p>
       `,
       };
 
@@ -140,7 +140,7 @@ async function sendEmailWithAttachment(email ,linkPath) {
       
           <p>If you have any questions, feel free to reply to this email. We're here to help!</p>
           <p>Best,</p>
-          <p>The Zameen Visit Team</p>
+          <p>The pricewards Team</p>
         `,
       };
   

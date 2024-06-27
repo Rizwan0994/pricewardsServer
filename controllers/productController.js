@@ -195,7 +195,6 @@ const getUserBestSellingProducts = asyncHandler(async (req, res) => {
 
     const products = await Product.find({ userId }) // Filter by userId
       .sort({ sold: -1 }) // Sort in descending order of 'sold' field
-      .limit(8) // Limit to top 8 products
       .populate('userId'); // Populate 'userId' field
 
     res.status(200).json({ success: true, products });
