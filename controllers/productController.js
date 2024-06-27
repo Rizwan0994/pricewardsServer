@@ -61,10 +61,15 @@ const getAllProducts = asyncHandler(async (req, res) => {
     if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
   }
 
+  // if (category) {
+  //   const categoryRegex = new RegExp(category, 'i'); // 'i' for case-insensitive
+  //   filter.category = categoryRegex;
+  // }
   if (category) {
-    const categoryRegex = new RegExp(category, 'i'); // 'i' for case-insensitive
-    filter.category = categoryRegex;
+    const categories = Array.isArray(category) ? category : [category];
+    filter.category = { $in: categories.map(cat => new RegExp(cat, 'i')) };
   }
+  
   if (name) {
     const nameRegex = new RegExp(name, 'i'); // 'i' for case-insensitive
     filter.name = nameRegex;
