@@ -27,7 +27,19 @@ const OrderSchema = new mongoose.Schema({
   isPaid: { type: Boolean, default: false },
   paidAt: { type: Date },
   isDelivered: { type: Boolean, default: false },
-  deliveredAt: { type: Date }
+  deliveredAt: { type: Date },
+  trackingStatus: {
+    type: String,
+    enum: ['order confirmed', 'order shipped', 'out for delivery', 'delivered'],
+    default: 'order confirmed'
+  },
+  isRefunded: { type: Boolean, default: false },
+  refundedAt: { type: Date },
+  refundResult: {
+    id: { type: String },
+    status: { type: String },
+    updateTime: { type: String }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);

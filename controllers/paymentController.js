@@ -44,6 +44,8 @@ const confirmPayment = asyncHandler(async (req, res) => {
         emailAddress: paymentIntent.receipt_email
       };
 
+      order.trackingStatus = 'order confirmed';
+
       await order.save();
 
       res.status(200).json({ success: true,message: 'Payment  successful', order });
@@ -62,7 +64,55 @@ const confirmPayment = asyncHandler(async (req, res) => {
   }
 });
 
+// Process refund
+const refundOrder = asyncHandler(async (req, res) => {
+  const { orderId } = req.body;
+  const order = await Order.findById(orderId);
+
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Order not found' });
+  }
+
+  if (!order.isPaid) {
+    return res.status(400).json({ success: false, message: 'Order is not paid, cannot process refund' });
+  }
+
+  try {
+    const refund = await stripe.refunds.create({
+      payment_intent: order.paymentResult.id,
+      amount: Math.round(order.totalPrice * 100), // amount in cents
+    });
+
+    if (refund.status === 'succeeded') {
+      order.isRefunded = true;
+      order.refundedAt = Date.now();
+      order.refundResult = {
+        id: refund.id,
+        status: refund.status,
+        updateTime: refund.created,
+      };
+
+      // Revert stock
+      for (const item of order.items) {
+        const product = await Product.findById(item.productId);
+        product.stock += item.quantity;
+        await product.save();
+      }
+
+      await order.save();
+
+      res.status(200).json({ success: true, order });
+    } else {
+      res.status(400).json({ success: false, message: 'Refund not successful' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
 module.exports = {
   createPaymentIntent,
-  confirmPayment
+  confirmPayment,
+  refundOrder
 };

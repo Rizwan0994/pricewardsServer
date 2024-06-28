@@ -7,7 +7,9 @@ const { jwtValidation} = require('../middlewares/authentication');
 const productRoutes = require('../routes/productRoutes');
 const cartRoutes = require('../routes/cartRoutes');
 const paymentRoutes = require('../routes/paymentRoutes');
+const orderRoutes=require("../routes/orderRoutes")
 const productController = require('../controllers/productController');
+
 
 router.use('/api/auth', authRoutes);
 
@@ -23,6 +25,7 @@ router.use(jwtValidation);
 router.use('/api/product',productRoutes);
 router.use('/api/cart', cartRoutes);
 router.use('/api/payment', paymentRoutes);
+router.use('/api/orders',orderRoutes)
 
 
 
