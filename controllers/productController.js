@@ -51,8 +51,8 @@ const getProduct = asyncHandler(async (req, res) => {
 
 // Get all products
 const getAllProducts = asyncHandler(async (req, res) => {
-  const {name, minPrice, maxPrice, category, bestFilter, page = 1, limit = 10 } = req.query;
-
+  const {name, minPrice, maxPrice, bestFilter, page = 1, limit = 10 } = req.query;
+let {category} = req.query;
   let filter = {};
 
   if (minPrice || maxPrice) {
@@ -66,9 +66,11 @@ const getAllProducts = asyncHandler(async (req, res) => {
   //   filter.category = categoryRegex;
   // }
   if (category) {
-    const categories = Array.isArray(category) ? category : [category];
-    filter.category = { $in: categories.map(cat => new RegExp(cat, 'i')) };
-  }
+    category = category.replace(/^\[|\]$/g, '').split(',');
+
+    // Since category is already an array, we can directly use it for filtering.
+    filter.category = { $in: category };
+}
   
   if (name) {
     const nameRegex = new RegExp(name, 'i'); // 'i' for case-insensitive
