@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Product = require("../models/product");
+const User = require("../models/user");
 
 // Create a new product
 const createProduct = asyncHandler(async (req, res) => {
@@ -199,12 +200,13 @@ const getBestSellingProducts = asyncHandler(async (req, res) => {
 const getUserBestSellingProducts = asyncHandler(async (req, res) => {
   try {
     const { userId } = req.params; // Get userId from request parameters
-
+ //find userinfo
+ const user = await User.findById(userId);
     const products = await Product.find({ userId }) // Filter by userId
       .sort({ sold: -1 }) // Sort in descending order of 'sold' field
-      .populate('userId'); // Populate 'userId' field
+      // .populate('userId'); // Populate 'userId' field
 
-    res.status(200).json({ success: true, products });
+    res.status(200).json({ success: true, products,user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

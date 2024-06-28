@@ -98,7 +98,38 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
 // Find all users whose role is "designer"
 const findAllDesigners = asyncHandler(async (req, res) => {
   try {
-    const designers = await User.find({ role: 'designer' });
+    const designers = await User.aggregate([
+      { $match: { role: 'designer' } },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'products'
+        }
+      },
+      {
+        $addFields: {
+          totalSold: { $sum: '$products.sold' }
+        }
+      },
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          profileName: 1,
+          email: 1,
+          description: 1,
+          phoneNumber: 1,
+          address: 1,
+          role: 1,
+          image: 1,
+          verified: 1,
+          totalSold: 1
+        }
+      }
+    ]);
+
     res.status(200).json({ success: true, designers, message: 'Designers fetched successfully' });
   } catch (error) {
     console.log(error);
