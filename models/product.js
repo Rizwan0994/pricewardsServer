@@ -15,6 +15,7 @@ const ProductSchema = new mongoose.Schema({
   seasonalCategory: String,
   fabricCategory: String,
   productGender: String,
+  isApproved: { type: Boolean, default: false },
   sold: Number,
   category: String,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

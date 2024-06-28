@@ -54,7 +54,7 @@ const getProduct = asyncHandler(async (req, res) => {
 const getAllProducts = asyncHandler(async (req, res) => {
   const {name, minPrice, maxPrice, bestFilter, page = 1, limit = 10 } = req.query;
 let {category} = req.query;
-  let filter = {};
+  let filter = { isApproved: true};
 
   if (minPrice || maxPrice) {
     filter.price = {};
@@ -109,7 +109,7 @@ const getUserProducts = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
 
   try {
-    const filter = { userId: userId };
+    const filter = { userId: userId, isApproved: true};
     const offset = (page - 1) * limit;
     const totalCount = await Product.countDocuments(filter);
     const products = await Product.find(filter).populate('userId');
@@ -160,7 +160,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   
     await product.save();
 
-    res.status(200).json({ success: true, product });
+    res.status(200).json({ success: true, product , message: 'Product updated successfully'});
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -186,12 +186,12 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 const getBestSellingProducts = asyncHandler(async (req, res) => {
   try {
-    const products = await Product.find({})
+    const products = await Product.find({isApproved: true})
       .sort({ sold: -1 }) // Sort in descending order of 'sold' field
       .limit(8) // Limit to top 8 products
       .populate('userId'); // Populate 'userId' field
 
-    res.status(200).json({ success: true, products });
+    res.status(200).json({ success: true, products, message: 'Top 8 best-selling products'});
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -202,7 +202,7 @@ const getUserBestSellingProducts = asyncHandler(async (req, res) => {
     const { userId } = req.params; // Get userId from request parameters
  //find userinfo
  const user = await User.findById(userId);
-    const products = await Product.find({ userId }) // Filter by userId
+    const products = await Product.find({ userId ,isApproved: true}) // Filter by userId
       .sort({ sold: -1 }) // Sort in descending order of 'sold' field
       // .populate('userId'); // Populate 'userId' field
 
@@ -212,6 +212,18 @@ const getUserBestSellingProducts = asyncHandler(async (req, res) => {
   }
 });
 
+//create controller where we can approve product
+const approveProduct = asyncHandler(async (req, res) => {
+  const { productId } = req.body;
+  try {
+    const product = await Product
+      .findByIdAndUpdate(productId, { isApproved: true }, { new: true })
+      .populate('userId');
+    res.status(200).json({ success: true, product, message: 'Product approved successfully'});
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 
 
@@ -224,5 +236,6 @@ module.exports = {
   deleteProduct,
   getUserProducts,
   getBestSellingProducts,
-  getUserBestSellingProducts
+  getUserBestSellingProducts,
+  approveProduct
 };

@@ -98,6 +98,7 @@ const refundOrder = asyncHandler(async (req, res) => {
         product.stock += item.quantity;
         await product.save();
       }
+       order.trackingStatus = 'refund processed';
 
       await order.save();
 

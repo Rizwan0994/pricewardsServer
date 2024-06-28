@@ -30,7 +30,7 @@ const OrderSchema = new mongoose.Schema({
   deliveredAt: { type: Date },
   trackingStatus: {
     type: String,
-    enum: ['order confirmed', 'order shipped', 'out for delivery', 'delivered'],
+    enum: ['order confirmed', 'order shipped', 'out for delivery', 'delivered','refund processed'],
     default: 'order confirmed'
   },
   isRefunded: { type: Boolean, default: false },
