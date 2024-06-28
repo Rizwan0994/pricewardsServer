@@ -4,7 +4,7 @@ const Order = require('../models/order');
 // Get all pending orders
 const getAllPendingOrders = asyncHandler(async (req, res) => {
   try {
-    const pendingOrders = await Order.find({ trackingStatus: { $ne: 'delivered' } }).populate('userId');
+    const pendingOrders = await Order.find({ trackingStatus: { $ne: 'delivered' },isPaid:true }).populate('userId');
     res.status(200).json({ success: true, pendingOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -14,7 +14,7 @@ const getAllPendingOrders = asyncHandler(async (req, res) => {
 // Get all delivered orders
 const getAllDeliveredOrders = asyncHandler(async (req, res) => {
   try {
-    const deliveredOrders = await Order.find({ trackingStatus: 'delivered' }).populate('userId');
+    const deliveredOrders = await Order.find({ trackingStatus: 'delivered' ,  isRefunded: false, }).populate('userId');
     res.status(200).json({ success: true, deliveredOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
