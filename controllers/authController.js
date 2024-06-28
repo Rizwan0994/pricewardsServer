@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 
 const { sendEmailWithAttachment, sendForgotPasswordEmail ,sendVerificationEmail} = require("../utils/Email");
 const { decodeToken } = require("../middlewares/authentication");
+const { add } = require("winston");
 
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -45,7 +46,10 @@ const loginUser = asyncHandler(async (req, res) => {
     phoneNumber: userVar.phoneNumber,
     role: userVar.role,
     image: userVar.image,
+    description: userVar.description, 
+    address: userVar.address,
     token: token,
+
   };
 
   // Passwords match, login successful
@@ -54,7 +58,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
 const registerUser = async (req, res) => {
-  const { firstName, lastName, description, profileName, email, phoneNumber, password, role, image } = req.body;
+  const { firstName, lastName, description, profileName, email, phoneNumber, password, role, image,address } = req.body;
   try {
     const existingUser = await UserModel.findOne({ email });
 
@@ -81,6 +85,8 @@ const registerUser = async (req, res) => {
     const obj = {
       email: email,
       description: description,
+    
+      address: address,
       password: hashedPassword,
       firstName: firstName,
       lastName: lastName,
@@ -189,6 +195,8 @@ const verifyOtp = async (req, res) => {
     email: user.email,
     profileName: user.profileName,
     phoneNumber: user.phoneNumber,
+    description: user.description, 
+    address: user.address,
     role: user.role,
     image: user.image,
   };
