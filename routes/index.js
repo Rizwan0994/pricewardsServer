@@ -9,10 +9,10 @@ const cartRoutes = require('../routes/cartRoutes');
 const paymentRoutes = require('../routes/paymentRoutes');
 const orderRoutes=require("../routes/orderRoutes")
 const productController = require('../controllers/productController');
-
+const userController = require('../controllers/userController');
 
 router.use('/api/auth', authRoutes);
-
+router.get('/api/user/findAllDesigners',userController.findAllDesigners)
 router.get('/api/product', productController.getAllProducts);
  router.use('/api/product/getBestSellingProducts', productController.getBestSellingProducts);
  router.get('/api/product/:id', productController.getProduct); 
