@@ -113,6 +113,9 @@ const getAllProducts = asyncHandler(async (req, res) => {
 if (isAdminApproval !== 'true') {
   filter.isApproved = true;
 }
+if (isAdminApproval === 'true') {
+  filter.isApproved = false;
+}
 
   if (minPrice || maxPrice) {
     filter.price = {};
@@ -145,7 +148,10 @@ if (isAdminApproval !== 'true') {
     const adminUserIds = adminUsers.map(user => user._id);
     console.log(adminUserIds);
     // Add admin user IDs to filter
+    if (isAdminApproval !== 'true') {
+      console.log('filtering by admin user IDs');
     filter.userId = { $in: adminUserIds };
+    }
 
     const totalCount = await Product.countDocuments(filter);
     const products = await Product.find(filter).populate('userId')
