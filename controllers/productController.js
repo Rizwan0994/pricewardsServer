@@ -139,7 +139,11 @@ if (isAdminApproval === 'true') {
       // If parsing fails, assume it's a single category string and wrap it in an array
       category = [category];
     }
-    filter.category = { $in: category };
+  
+    // Convert each category to a regex for case-insensitive matching
+    const categoryRegexes = category.map(cat => new RegExp(cat, 'i'));
+  
+    filter.category = { $in: categoryRegexes };
   }
 
   if (name) {
