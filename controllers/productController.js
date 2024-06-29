@@ -132,7 +132,13 @@ if (isAdminApproval === 'true') {
   }
 
   if (category) {
-    category = category.replace(/^\[|\]$/g, '').split(',');
+    try {
+      // Attempt to parse the category as JSON
+      category = JSON.parse(category);
+    } catch (error) {
+      // If parsing fails, assume it's a single category string and wrap it in an array
+      category = [category];
+    }
     filter.category = { $in: category };
   }
 
