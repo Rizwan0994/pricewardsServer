@@ -51,10 +51,68 @@ const getProduct = asyncHandler(async (req, res) => {
 });
 
 // Get all products
+// const getAllProducts = asyncHandler(async (req, res) => {
+//   const {name, isAdminApproval, minPrice, maxPrice, bestFilter, page = 1, limit = 10 } = req.query;
+// let {category} = req.query;
+//   let filter = { isApproved: true};
+
+//   if (minPrice || maxPrice) {
+//     filter.price = {};
+//     if (minPrice) filter.price.$gte = parseFloat(minPrice);
+//     if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
+//   }
+
+//   // if (category) {
+//   //   const categoryRegex = new RegExp(category, 'i'); // 'i' for case-insensitive
+//   //   filter.category = categoryRegex;
+//   // }
+//   if (category) {
+//     category = category.replace(/^\[|\]$/g, '').split(',');
+
+//     // Since category is already an array, we can directly use it for filtering.
+//     filter.category = { $in: category };
+// }
+  
+//   if (name) {
+//     const nameRegex = new RegExp(name, 'i'); // 'i' for case-insensitive
+//     filter.name = nameRegex;
+//   }
+//   if (bestFilter) {
+//     filter.rating = { $gte: 4 }; // Assuming `rating` field exists in your schema
+//   }
+
+//   try {
+//     const offset = (page - 1) * limit;
+//     const totalCount = await Product.countDocuments(filter);
+//     const products = await Product.find(filter).populate('userId');
+//       // .skip(offset)
+//       // .limit(parseInt(limit));
+
+//     const totalPages = Math.ceil(totalCount / limit);
+
+//     res.status(200).json({
+//       success: true,
+//       products,
+//       // page: parseInt(page),
+//       // limit: parseInt(limit),
+//       totalCount: totalCount,
+//       // totalPages: totalPages,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// });
+
+
+// Get all products
 const getAllProducts = asyncHandler(async (req, res) => {
-  const {name, minPrice, maxPrice, bestFilter, page = 1, limit = 10 } = req.query;
-let {category} = req.query;
-  let filter = { isApproved: true};
+  const { name, isAdminApproval, minPrice, maxPrice, bestFilter, page = 1, limit = 10 } = req.query;
+  let { category } = req.query;
+  let filter = {};
+
+if (isAdminApproval !== 'true') {
+  filter.isApproved = true;
+}
 
   if (minPrice || maxPrice) {
     filter.price = {};
@@ -62,29 +120,35 @@ let {category} = req.query;
     if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
   }
 
-  // if (category) {
-  //   const categoryRegex = new RegExp(category, 'i'); // 'i' for case-insensitive
-  //   filter.category = categoryRegex;
-  // }
   if (category) {
     category = category.replace(/^\[|\]$/g, '').split(',');
-
-    // Since category is already an array, we can directly use it for filtering.
     filter.category = { $in: category };
-}
-  
+  }
+
   if (name) {
-    const nameRegex = new RegExp(name, 'i'); // 'i' for case-insensitive
+    const nameRegex = new RegExp(name, 'i');
     filter.name = nameRegex;
   }
+
   if (bestFilter) {
-    filter.rating = { $gte: 4 }; // Assuming `rating` field exists in your schema
+    filter.rating = { $gte: 4 }; 
   }
 
   try {
     const offset = (page - 1) * limit;
+
+    // Find admin users
+    const adminUsers = await User.find({ role: 'admin' });
+    // console.log(adminUsers);
+
+    // Extract admin user IDs
+    const adminUserIds = adminUsers.map(user => user._id);
+    console.log(adminUserIds);
+    // Add admin user IDs to filter
+    filter.userId = { $in: adminUserIds };
+
     const totalCount = await Product.countDocuments(filter);
-    const products = await Product.find(filter).populate('userId');
+    const products = await Product.find(filter).populate('userId')
       // .skip(offset)
       // .limit(parseInt(limit));
 
@@ -95,13 +159,14 @@ let {category} = req.query;
       products,
       // page: parseInt(page),
       // limit: parseInt(limit),
-      totalCount: totalCount,
-      // totalPages: totalPages,
+      totalCount,
+      // totalPages,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
 
 // Find all products of a specific user
 const getUserProducts = asyncHandler(async (req, res) => {
