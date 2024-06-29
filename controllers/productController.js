@@ -5,8 +5,15 @@ const User = require("../models/user");
 // Create a new product
 const createProduct = asyncHandler(async (req, res) => {
   const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,sold,category } = req.body;
-  console.log(req.body);     
-  const userId = req.loginUser._id;               
+   
+  const userId = req.loginUser._id; 
+  let isApproved = false; 
+        //find user role using userId id admin
+        const user = await User.findById(userId);
+        if (user.role === 'admin') {
+          isApproved = true;
+        }
+
 
   try {
     const product = new Product({
@@ -25,7 +32,8 @@ const createProduct = asyncHandler(async (req, res) => {
       category:category,
       productGender,
       sold,
-      userId
+      userId,
+      isApproved: isApproved 
     });
 
     await product.save();
