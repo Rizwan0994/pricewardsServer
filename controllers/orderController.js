@@ -139,17 +139,22 @@ const updateTrackingStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { trackingStatus } = req.body;
 
-  try {
-    const order = await Order.findById(id);
+  if (trackingStatus === undefined || trackingStatus === '') {
+    return res.status(400).json({ success: false, message: 'Invalid tracking status' });
+  }
 
-    if (!order) {
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { trackingStatus: trackingStatus },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedOrder) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    order.trackingStatus = trackingStatus;
-    await order.save();
-
-    res.status(200).json({ success: true, order });
+    res.status(200).json({ success: true, order: updatedOrder });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
