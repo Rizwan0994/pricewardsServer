@@ -330,7 +330,7 @@ const createCustomProduct = asyncHandler(async (req, res) => {
         //find user role using userId id admin
         const user = await User.findById(userId);
         if (user.role === 'admin') {
-          isApproved = true;
+          // isApproved = true;
         }
 
         // const product = new Product({
@@ -399,6 +399,30 @@ const createCustomProduct = asyncHandler(async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
       }
       });
+
+      //add product ro wishlist
+const addToWishlist = asyncHandler(async (req, res) => {
+  const { productId } = req.body;
+  const userId = req.loginUser._id;
+  try {
+     const product = await Product.findById(productId); 
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    user.wishlist.push(product);
+    await user.save();
+    res.status(200).json({ success: true, user, message: 'Product added to wishlist successfully'});
+   
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 
 
 
