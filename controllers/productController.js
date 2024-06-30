@@ -1,5 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const Product = require("../models/product");
+const Measurement = require("../models/measurement");
+const Cart = require("../models/cart");
+const Order = require("../models/order");
 const User = require("../models/user");
 
 // Create a new product
@@ -43,6 +46,8 @@ const createProduct = asyncHandler(async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+
 
 // Get a single product by ID
 const getProduct = asyncHandler(async (req, res) => {
@@ -316,6 +321,78 @@ const approveProduct = asyncHandler(async (req, res) => {
   }
 });
 
+//create cutomer where we can create cutome product ,then add to cart and then proceed to checkout
+const createCustomProduct = asyncHandler(async (req, res) => {
+  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,sold,category,size } = req.body;
+    try{
+  const userId = req.loginUser._id; 
+  let isApproved = false; 
+        //find user role using userId id admin
+        const user = await User.findById(userId);
+        if (user.role === 'admin') {
+          isApproved = true;
+        }
+
+        const product = new Product({
+          name,
+          price,
+          description,
+          imageUrl: Array.isArray(imageUrl) ? imageUrl : [imageUrl],
+          code,
+          stock,
+          length,
+          width,
+          discount,
+          freeShipping,
+          seasonalCategory,
+          fabricCategory,
+          category:category,
+          productGender,
+          sold,
+          userId,
+          size,
+          isApproved: isApproved 
+        });
+
+        await product.save();
+
+        const { chest,waist ,neck,hips,sleeve,shoulder,inseam} = req.body;
+       //now add measture ment of product  to measurement table
+       const measurement = new Measurement({
+        productId: product._id,
+        chest,
+        waist,
+        neck,
+        hips,
+        sleeve,
+        shoulder,
+        inseam
+      });
+      await measurement.save();
+
+      //now add product to cart
+      const cart = new Cart({
+        userId,
+        items: [{ productId: product._id, quantity: 1 }]
+      });
+      await cart.save();
+
+      //now proceed to checkout
+      const order = new Order({
+        userId,
+        items: [{ productId: product._id, quantity: 1 }],
+        shippingAddress: user.address,
+        paymentMethod: 'stripe',
+        totalPrice: product.price
+
+      });
+      await order.save();
+
+      res.status(201).json({ success: true, product, measurement, cart, order });
+      } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+      }
+      });
 
 
 
@@ -328,5 +405,6 @@ module.exports = {
   getUserProducts,
   getBestSellingProducts,
   getUserBestSellingProducts,
-  approveProduct
+  approveProduct,
+  createCustomProduct
 };
