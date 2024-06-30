@@ -4,7 +4,7 @@ const User = require("../models/user");
 
 // Create a new product
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,sold,category } = req.body;
+  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,sold,category,size } = req.body;
    
   const userId = req.loginUser._id; 
   let isApproved = false; 
@@ -33,6 +33,7 @@ const createProduct = asyncHandler(async (req, res) => {
       productGender,
       sold,
       userId,
+      size,
       isApproved: isApproved 
     });
 
@@ -224,7 +225,7 @@ const getUserProducts = asyncHandler(async (req, res) => {
 // Update a product by ID
 const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,category } = req.body;
+  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,category,size } = req.body;
   const userId = req.loginUser._id; 
   try {
     const product = await Product.findById(id);
@@ -246,6 +247,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.fabricCategory = fabricCategory || product.fabricCategory;
     product.productGender = productGender || product.productGender;
     product.category = category || product.category;
+    product.size = size || product.size;
   
     await product.save();
 
