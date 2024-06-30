@@ -160,14 +160,17 @@ const checkout = asyncHandler(async (req, res) => {
       }
     }
 
-    // Calculate total price
-    // Calculate total price with discount
+
+    // Calculate total price with fixed discount
     const totalPrice = cart.items.reduce((acc, item) => {
-      const discount = item.productId.discount || 0; // Assuming discount is a value between 0 and 1
-      const priceAfterDiscount = item.productId.price * (1 - discount);
+      const discount = item.productId.discount || 0; 
+      let priceAfterDiscount = item.productId.price - discount;
+      if (priceAfterDiscount < 0) {
+        priceAfterDiscount = 0; 
+      }
       return acc + priceAfterDiscount * item.quantity;
     }, 0);
-    //apply discount
+    
 
     // Create order
     const order = new Order({
