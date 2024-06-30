@@ -323,7 +323,7 @@ const approveProduct = asyncHandler(async (req, res) => {
 
 //create cutomer where we can create cutome product ,then add to cart and then proceed to checkout
 const createCustomProduct = asyncHandler(async (req, res) => {
-  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,sold,category,size } = req.body;
+  const { name, price, description, imageUrl, code, stock, length, width, discount, freeShipping, seasonalCategory, fabricCategory, productGender,sold,category,size,productId } = req.body;
     try{
   const userId = req.loginUser._id; 
   let isApproved = false; 
@@ -333,28 +333,33 @@ const createCustomProduct = asyncHandler(async (req, res) => {
           isApproved = true;
         }
 
-        const product = new Product({
-          name,
-          price,
-          description,
-          imageUrl: Array.isArray(imageUrl) ? imageUrl : [imageUrl],
-          code,
-          stock,
-          length,
-          width,
-          discount,
-          freeShipping,
-          seasonalCategory,
-          fabricCategory,
-          category:category,
-          productGender,
-          sold,
-          userId,
-          size,
-          isApproved: isApproved 
-        });
+        // const product = new Product({
+        //   name,
+        //   price,
+        //   description,
+        //   imageUrl: Array.isArray(imageUrl) ? imageUrl : [imageUrl],
+        //   code,
+        //   stock,
+        //   length,
+        //   width,
+        //   discount,
+        //   freeShipping,
+        //   seasonalCategory,
+        //   fabricCategory,
+        //   category:category,
+        //   productGender,
+        //   sold,
+        //   userId,
+        //   size,
+        //   isApproved: isApproved 
+        // });
 
-        await product.save();
+        // await product.save();
+        const product = await Product.findById(productId);
+        if (!product) {
+          return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+         
 
         const { chest,waist ,neck,hips,sleeve,shoulder,inseam} = req.body;
        //now add measture ment of product  to measurement table
@@ -383,7 +388,8 @@ const createCustomProduct = asyncHandler(async (req, res) => {
         items: [{ productId: product._id, quantity: 1 }],
         shippingAddress: user.address,
         paymentMethod: 'stripe',
-        totalPrice: product.price
+        totalPrice: product.price,
+        isCustom: true
 
       });
       await order.save();

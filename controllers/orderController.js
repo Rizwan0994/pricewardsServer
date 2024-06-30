@@ -33,17 +33,17 @@
 // const updateTrackingStatus = asyncHandler(async (req, res) => {
 //     const { id } = req.params;
 //     const { trackingStatus } = req.body;
-  
+
 //     try {
 //       const order = await Order.findById(id);
-  
+
 //       if (!order) {
 //         return res.status(404).json({ success: false, message: 'Order not found' });
 //       }
-  
+
 //       order.trackingStatus = trackingStatus;
 //       await order.save();
-  
+
 //       res.status(200).json({ success: true, order });
 //     } catch (error) {
 //       res.status(500).json({ success: false, message: error.message });
@@ -64,7 +64,7 @@
 //       res.status(500).json({ success: false, message: error.message });
 //     }
 //   });
-  
+
 
 // module.exports = {
 //   getAllPendingOrders,
@@ -82,6 +82,7 @@ const Product = require('../models/product');
 const getAllPendingOrders = asyncHandler(async (req, res) => {
   try {
     const userId = req.loginUser._id;
+    const userRole = req.loginUser.role;
 
     // Find all pending orders that contain products belonging to the owner
     const pendingOrders = await Order.find({
@@ -100,7 +101,19 @@ const getAllPendingOrders = asyncHandler(async (req, res) => {
       return order;
     }).filter(order => order.items.length > 0);
 
-    res.status(200).json({ success: true, pendingOrders: filteredOrders });
+
+
+    let customOrders;
+    //if user role is admin then append all custome order in pending order without filtering on base of userid
+    if (userRole === 'admin') {
+      customOrders = await Order.find({ trackingStatus: { $ne: 'delivered' }, isCustom: true }).populate('userId').populate({
+        path: 'items.productId',
+        model: 'Product'
+      });
+    }
+
+    const allPendingOrders = [...filteredOrders, ...customOrders];
+    res.status(200).json({ success: true, pendingOrders: allPendingOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -112,6 +125,7 @@ const getAllPendingOrders = asyncHandler(async (req, res) => {
 const getAllDeliveredOrders = asyncHandler(async (req, res) => {
   try {
     const userId = req.loginUser._id;
+    const userRole = req.loginUser.role;
 
     // Find all delivered orders that contain products belonging to the owner
     const deliveredOrders = await Order.find({
@@ -129,7 +143,18 @@ const getAllDeliveredOrders = asyncHandler(async (req, res) => {
       return order;
     }).filter(order => order.items.length > 0);
 
-    res.status(200).json({ success: true, deliveredOrders: filteredOrders });
+    let customOrders;
+    //if user role is admin then append all custome order in delivered order without filtering on base of userid
+    if (userRole === 'admin') {
+      customOrders = await Order.find({ trackingStatus: 'delivered', isRefunded: false, isCustom: true }).populate('userId').populate({
+        path: 'items.productId',
+        model: 'Product'
+      });
+    }
+
+
+    const allOrders = [...filteredOrders, ...customOrders];
+    res.status(200).json({ success: true, deliveredOrders: allOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -162,10 +187,10 @@ const updateTrackingStatus = asyncHandler(async (req, res) => {
 });
 
 // Get all refunded pending orders for a specific owner's products
-// Get all refunded pending orders for a specific owner's products
 const getRefundedPendingOrders = asyncHandler(async (req, res) => {
   try {
     const userId = req.loginUser._id;
+    const userRole = req.loginUser.role;
 
     // Find all refunded orders that contain products belonging to the owner
     const orders = await Order.find({
@@ -182,7 +207,19 @@ const getRefundedPendingOrders = asyncHandler(async (req, res) => {
       return order;
     }).filter(order => order.items.length > 0);
 
-    res.status(200).json({ success: true, orders: filteredOrders });
+    let customOrders;
+    if (userRole === 'admin') {
+      customOrders = await Order.find({
+        isRefunded: true,
+        isCustom: true
+      }).populate('userId').populate({
+        path: 'items.productId',
+        model: 'Product'
+      });
+    }
+    const allOrders = [...filteredOrders, ...customOrders];
+
+    res.status(200).json({ success: true, orders: allOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

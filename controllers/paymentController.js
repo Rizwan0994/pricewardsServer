@@ -55,6 +55,7 @@ const confirmPayment = asyncHandler(async (req, res) => {
        for (const item of order.items) {
          const product = await Product.findById(item.productId);
          product.stock += item.quantity;
+         product.sold -= item.quantity;
          await product.save();
        }
       res.status(400).json({ success: false, message: 'Payment not successful' });
@@ -96,6 +97,8 @@ const refundOrder = asyncHandler(async (req, res) => {
       for (const item of order.items) {
         const product = await Product.findById(item.productId);
         product.stock += item.quantity;
+        product.sold -= item.quantity;
+
         await product.save();
       }
        order.trackingStatus = 'refund processed';

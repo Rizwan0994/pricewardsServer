@@ -39,7 +39,8 @@ const OrderSchema = new mongoose.Schema({
     id: { type: String },
     status: { type: String },
     updateTime: { type: String }
-  }
+  },
+  isCustom: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);
