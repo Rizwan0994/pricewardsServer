@@ -79,57 +79,57 @@
 const asyncHandler = require('express-async-handler');
 const Order = require('../models/order');
 const Product = require('../models/product');
-
-// Get all pending orders for a specific owner's products
 const getAllPendingOrders = asyncHandler(async (req, res) => {
   try {
     const userId = req.loginUser._id;
 
-    // Find all products that belong to this owner
-    const ownerProducts = await Product.find({ userId });
-    
-    // Extract the product IDs
-    const productIds = ownerProducts.map(product => product._id);
-
-    // Find all pending orders that contain these products
-    const pendingOrders = await Order.find({ 
+    // Find all pending orders that contain products belonging to the owner
+    const pendingOrders = await Order.find({
       trackingStatus: { $ne: 'delivered' },
       isPaid: true,
       isRefunded: false,
-      'items.productId': { $in: productIds }
+      'items.productId': { $in: await Product.find({ userId }).distinct('_id') }
     }).populate('userId').populate({
       path: 'items.productId',
       model: 'Product'
     });
 
-    res.status(200).json({ success: true, pendingOrders });
+    // Filter out the items that do not belong to the current user
+    const filteredOrders = pendingOrders.map(order => {
+      order.items = order.items.filter(item => item.productId.userId.toString() === userId.toString());
+      return order;
+    }).filter(order => order.items.length > 0);
+
+    res.status(200).json({ success: true, pendingOrders: filteredOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+
 
 // Get all delivered orders for a specific owner's products
 const getAllDeliveredOrders = asyncHandler(async (req, res) => {
   try {
     const userId = req.loginUser._id;
 
-    // Find all products that belong to this owner
-    const ownerProducts = await Product.find({ userId });
-
-    // Extract the product IDs
-    const productIds = ownerProducts.map(product => product._id);
-
-    // Find all delivered orders that contain these products
-    const deliveredOrders = await Order.find({ 
+    // Find all delivered orders that contain products belonging to the owner
+    const deliveredOrders = await Order.find({
       trackingStatus: 'delivered',
       isRefunded: false,
-      'items.productId': { $in: productIds }
+      'items.productId': { $in: await Product.find({ userId }).distinct('_id') }
     }).populate('userId').populate({
       path: 'items.productId',
       model: 'Product'
     });
 
-    res.status(200).json({ success: true, deliveredOrders });
+    // Filter out the items that do not belong to the current user
+    const filteredOrders = deliveredOrders.map(order => {
+      order.items = order.items.filter(item => item.productId.userId.toString() === userId.toString());
+      return order;
+    }).filter(order => order.items.length > 0);
+
+    res.status(200).json({ success: true, deliveredOrders: filteredOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -162,31 +162,31 @@ const updateTrackingStatus = asyncHandler(async (req, res) => {
 });
 
 // Get all refunded pending orders for a specific owner's products
+// Get all refunded pending orders for a specific owner's products
 const getRefundedPendingOrders = asyncHandler(async (req, res) => {
   try {
     const userId = req.loginUser._id;
 
-    // Find all products that belong to this owner
-    const ownerProducts = await Product.find({ userId });
-
-    // Extract the product IDs
-    const productIds = ownerProducts.map(product => product._id);
-
-    // Find all refunded orders that contain these products
-    const orders = await Order.find({ 
+    // Find all refunded orders that contain products belonging to the owner
+    const orders = await Order.find({
       isRefunded: true,
-      'items.productId': { $in: productIds }
+      'items.productId': { $in: await Product.find({ userId }).distinct('_id') }
     }).populate('userId').populate({
       path: 'items.productId',
       model: 'Product'
     });
 
-    res.status(200).json({ success: true, orders });
+    // Filter out the items that do not belong to the current user
+    const filteredOrders = orders.map(order => {
+      order.items = order.items.filter(item => item.productId.userId.toString() === userId.toString());
+      return order;
+    }).filter(order => order.items.length > 0);
+
+    res.status(200).json({ success: true, orders: filteredOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-
 module.exports = {
   getAllPendingOrders,
   getAllDeliveredOrders,
