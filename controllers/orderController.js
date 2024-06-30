@@ -95,6 +95,7 @@ const getAllPendingOrders = asyncHandler(async (req, res) => {
     const pendingOrders = await Order.find({ 
       trackingStatus: { $ne: 'delivered' },
       isPaid: true,
+      isRefunded: false,
       'items.productId': { $in: productIds }
     }).populate('userId').populate({
       path: 'items.productId',
