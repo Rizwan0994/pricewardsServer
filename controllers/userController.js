@@ -36,7 +36,7 @@ const resetProfilePassword = asyncHandler(async (req, res) => {
 
 const updateUserProfile = asyncHandler(async (req, res) => {
   const data = req.body;
-  const userId = req.loginUser.id;
+  const userId = req.loginUser._id;
 
   // Find the user by userId
   const user = await User.findById(userId);
@@ -58,16 +58,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     res.status(200).json({
       success: true,
       message: "User profile updated successfully",
-      user: {
-        name: user.name,
-        phoneNumber: user.phoneNumber,
-        email: user.email,
-        image: user.image,
-        address: user.address,
-        country: user.country,
-        city: user.city,
-        whatsappNumber: user.whatsappNumber
-      }
+      user: user
     });
   } catch (error) {
     console.error(error);

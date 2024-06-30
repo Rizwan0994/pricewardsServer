@@ -4,6 +4,7 @@ const Measurement = require("../models/measurement");
 const Cart = require("../models/cart");
 const Order = require("../models/order");
 const User = require("../models/user");
+const Wishlist = require("../models/wishlist");
 
 // Create a new product
 const createProduct = asyncHandler(async (req, res) => {
@@ -401,30 +402,52 @@ const createCustomProduct = asyncHandler(async (req, res) => {
       });
 
       //add product ro wishlist
-const addToWishlist = asyncHandler(async (req, res) => {
-  const { productId } = req.body;
-  const userId = req.loginUser._id;
-  try {
-     const product = await Product.findById(productId); 
+      const addToWishlist = asyncHandler(async (req, res) => {
+        const { productId } = req.body;
+        const userId = req.loginUser._id;
+      
+        // Check if the product exists
+        const product = await Product.findById(productId);
+        if (!product) {
+          res.status(404);
+          throw new Error('Product not found');
+        }
+      
+        // Find the user's wishlist
+        let wishlist = await Wishlist.findOne({ userId });
+      
+        // If no wishlist exists for the user, create a new one
+        if (!wishlist) {
+          wishlist = new Wishlist({ userId, products: [productId] });
+        } else {
+          // If the product is already in the wishlist, return an error
+          if (wishlist.products.includes(productId)) {
+            res.status(400);
+            throw new Error('Product already in wishlist');
+          }
+      
+          // Add the product to the wishlist
+          wishlist.products.push(productId);
+        }
+      
+        await wishlist.save();
+        res.status(200).json({ success: true, wishlist });
+      });
 
-    if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-    const user = await User.findById(userId)
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    user.wishlist.push(product);
-    await user.save();
-    res.status(200).json({ success: true, user, message: 'Product added to wishlist successfully'});
-   
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
 
-
-
+      const getWishlist = asyncHandler(async (req, res) => {
+        const userId = req.loginUser._id;
+      
+        // Find the user's wishlist
+        const wishlist = await Wishlist.findOne({ userId }).populate('products');
+      
+        if (!wishlist) {
+          res.status(404);
+          throw new Error('Wishlist not found');
+        }
+      
+        res.status(200).json({ success: true, wishlist });
+      });
 
 module.exports = {
   createProduct,
@@ -436,5 +459,7 @@ module.exports = {
   getBestSellingProducts,
   getUserBestSellingProducts,
   approveProduct,
-  createCustomProduct
+  createCustomProduct,
+  addToWishlist,
+  getWishlist
 };

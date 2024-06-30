@@ -7,8 +7,11 @@ router.post('/', productController.createProduct);
 router.get('/', productController.getAllProducts);
 router.get('/user/products', productController.getUserProducts);
 router.post('/approveProduct', productController.approveProduct);
+router.post('/addToWishlist', productController.addToWishlist);
+router.get('/wishlist', productController.getWishlist);
 router.post('/createCustomProduct', productController.createCustomProduct);
 router.put('/:id', productController.updateProduct);
 router.delete('/:id', productController.deleteProduct);
+
 
 module.exports = router;

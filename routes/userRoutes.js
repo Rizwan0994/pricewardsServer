@@ -5,8 +5,8 @@ const userController = require('../controllers/userController')
 
 router.route('/resetProfilePassword').post(userController.resetProfilePassword)
 router.route('/profile').put(userController.updateUserProfile).delete(userController.deleteUserProfile)
-router.route('/addOrUpdateAgency').post(userController.addOrUpdateAgency)
-router.route('/getUserAgency').get(userController.getUserAgency)
+// router.route('/addOrUpdateAgency').post(userController.addOrUpdateAgency)
+// router.route('/getUserAgency').get(userController.getUserAgency)
 
 
 
